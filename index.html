@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Tax Calculator & Form 16 Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 25px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .total {
+            font-size: 18px;
+            color: #764ba2;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20px auto;
+            padding: 0;
+            border-radius: 15px;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close:hover {
+            opacity: 0.8;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .employee-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .employee-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .employee-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .employee-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .employee-kgid {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .employee-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .employee-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 13px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-edit {
+            background: #4facfe;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #3a8cd9;
+        }
+
+        .btn-calculate {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            background: #5568d3;
+        }
+
+        .btn-delete {
+            background: #f5576c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d9455a;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .payslip-container {
+            border: 2px solid #000;
+            padding: 0;
+            background: white;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            page-break-inside: avoid;
+        }
+
+        .payslip-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #000;
+        }
+
+        .payslip-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .payslip-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .payslip-body {
+            padding: 20px;
+        }
+
+        .payslip-section {
+            margin-bottom: 15px;
+        }
+
+        .payslip-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .payslip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .payslip-table th {
+            background: #f0f0f0;
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #000;
+            font-weight: bold;
+        }
+
+        .payslip-table td {
+            padding: 8px 10px;
+            border: 1px solid #000;
+        }
+
+        .payslip-total {
+            background: #e8e8e8;
+            font-weight: bold;
+        }
+
+        .payslip-net {
+            background: #d4edda;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .payslip-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #000;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #form16Preview {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background: white;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .form16-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .form16-section {
+            margin-bottom: 15px;
+        }
+
+        .form16-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Income Tax Calculator</h1>
+            <p>For Government Employees - FY 2025-26 (AY 2026-27)</p>
+            <p style="font-size: 12px; margin-top: 5px;">Complete Salary Statement & Form 16 Generator</p>
+        </div>
+
+        <div style="background: #fff3cd; padding: 15px; margin: 0; border-bottom: 2px solid #ffc107; font-size: 13px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">ℹ️</span>
+                <div>
+                    <strong>Features:</strong> Month-wise Salary Statement (Mar-Feb) • Auto-calculated Deductions • Form 16 with Annexure • Both Tax Regimes • Professional Format
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="tab" onclick="showTab('calculator')">Calculator</button>
+            <button class="tab" onclick="showTab('payslip')">Pay Slip</button>
+            <button class="tab" onclick="showTab('form16')">Form 16</button>
+        </div>
+
+        <div id="dashboard" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #667eea; margin: 0;">👥 Employee Dashboard</h3>
+                <button class="btn" onclick="showAddEmployeeModal()" style="width: auto; padding: 10px 20px; margin: 0;">+ Add Employee</button>
+            </div>
+
+            <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 15px; margin-bottom: 20px; border-radius: 5px;">
+                <div style="font-size: 13px; color: #1565c0;">
+                    <strong>💡 Smart Pre-filling:</strong> Click "Calculate" or "Pay Slip" on any employee card to auto-load their saved data. All salary components, deductions, and settings are remembered!
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="searchEmployee" placeholder="🔍 Search by Name or KGID..." onkeyup="searchEmployees()" style="border-color: #667eea;">
+            </div>
+
+            <div id="employeeStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold;" id="totalEmployees">0</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Total Employees</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold;" id="completedCalculations">0</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Calculations Done</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold;" id="generatedForms">0</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Forms Generated</div>
+                </div>
+            </div>
+
+            <div id="employeeList" style="max-height: 500px; overflow-y: auto;">
+                <!-- Employee cards will be inserted here -->
+            </div>
+
+            <div id="noEmployees" style="text-align: center; padding: 60px 20px; color: #999;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                <h3 style="color: #999; font-weight: normal;">No Employees Added Yet</h3>
+                <p style="font-size: 14px;">Click "Add Employee" to get started</p>
+            </div>
+        </div>
+
+        <div id="calculator" class="tab-content">
+            <div class="form-group">
+                <label>Select Month (for DA calculation)</label>
+                <select id="calculatorMonth" onchange="calculateDA(); updateDAIndicator()">
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                </select>
+                <div id="daRateIndicator" style="margin-top: 8px; padding: 8px; border-radius: 5px; font-size: 12px; font-weight: 600; text-align: center;"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Assessment Year</label>
+                <select id="assessmentYear">
+                    <option value="2026-27">2026-27 (FY 2025-26)</option>
+                    <option value="2025-26">2025-26 (FY 2024-25)</option>
+                    <option value="2024-25">2024-25 (FY 2023-24)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tax Regime</label>
+                <select id="taxRegime">
+                    <option value="new">New Tax Regime</option>
+                    <option value="old">Old Tax Regime</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Select Month for DA Calculation</label>
+                <select id="calculatorMonth" onchange="calculateDA(); updateDAIndicator();">
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                </select>
+            </div>
+
+            <div id="daRateIndicator" style="padding: 10px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 13px; margin-bottom: 20px; background: #d4edda; color: #155724;">
+                📊 DA Rate: 14.25% (July to February Period)
+            </div>
+
+            <h3 style="color: #667eea; margin: 25px 0 15px 0; font-size: 16px;">💰 Monthly Salary Components</h3>
+            
+            <div class="form-group">
+                <label>Basic Pay (Monthly) (₹)</label>
+                <input type="number" id="basicPay" placeholder="e.g., 40000" value="0" onchange="calculateDA()">
+            </div>
+
+            <div class="form-group">
+                <label>DA - Dearness Allowance (Monthly) (₹) <span style="color: #888; font-size: 11px;">[Auto: 12.25% (Mar-Jun) | 14.25% (Jul-Feb)]</span></label>
+                <input type="number" id="da" placeholder="Auto-calculated from Basic Pay" value="0" readonly style="background-color: #f5f5f5;">
+            </div>
+
+            <div class="form-group">
+                <label>HRA - House Rent Allowance (Monthly) (₹) <span style="color: #888; font-size: 11px;">[Auto: Basic × 7.5%]</span></label>
+                <input type="number" id="hraMonthly" placeholder="Auto-calculated from Basic Pay" value="0" readonly style="background-color: #f5f5f5;">
+            </div>
+
+            <div class="form-group">
+                <label>MA - Medical Allowance (Monthly) (₹)</label>
+                <input type="number" id="ma" placeholder="e.g., 1000" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Charge Allowance (Monthly) (₹)</label>
+                <input type="number" id="chargeAllowance" placeholder="e.g., 2000" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Other Allowances (Monthly) (₹)</label>
+                <input type="number" id="otherAllowances" placeholder="e.g., 1500" value="0">
+            </div>
+
+            <h3 style="color: #d32f2f; margin: 25px 0 15px 0; font-size: 16px;">➖ Monthly Deductions</h3>
+
+            <div class="form-group">
+                <label>Professional Tax (Monthly) (₹)</label>
+                <input type="number" id="professionalTaxMonthly" placeholder="e.g., 200" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>GIS - Group Insurance Scheme (Monthly) (₹)</label>
+                <input type="number" id="gis" placeholder="e.g., 100" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>KGID - Health Insurance (Monthly) (₹)</label>
+                <input type="number" id="kgidDeduction" placeholder="e.g., 50" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>LIC Premium (Monthly) (₹)</label>
+                <input type="number" id="lic" placeholder="e.g., 1500" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Pension Scheme Type</label>
+                <select id="pensionType" onchange="handlePensionTypeChange()">
+                    <option value="none">None</option>
+                    <option value="gpf">GPF (Manual Entry)</option>
+                    <option value="nps">NPS (Auto: 10% of Basic+DA)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="gpfNpsGroup" style="display: none;">
+                <label id="gpfNpsLabel">GPF/NPS Contribution (Monthly) (₹)</label>
+                <input type="number" id="gpfNps" placeholder="Enter amount or auto-calculated" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Other Deductions (Monthly) (₹)</label>
+                <input type="number" id="otherDeductions" placeholder="e.g., 500" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Standard Deduction (₹)</label>
+                <input type="number" id="standardDeduction" placeholder="Auto-filled based on regime" value="75000" readonly>
+            </div>
+
+            <div id="oldRegimeDeductions" style="display: none;">
+                <h3 style="color: #667eea; margin: 25px 0 15px 0; font-size: 16px;">📊 Old Regime - Additional Deductions (Annual)</h3>
+                
+                <div class="form-group">
+                    <label>80C Deductions (₹)</label>
+                    <input type="number" id="deduction80C" placeholder="Max 150000 (Auto-calculated from GPF/NPS/LIC)" value="0" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>80D (Medical Insurance) (₹)</label>
+                    <input type="number" id="deduction80D" placeholder="Max 25000" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label>HRA Exemption (₹)</label>
+                    <input type="number" id="hra" placeholder="Auto-calculated" value="0" readonly>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>TDS Already Deducted (₹)</label>
+                <input type="number" id="tdsDeducted" placeholder="e.g., 50000" value="0">
+            </div>
+
+            <button class="btn" onclick="calculateTax()">Calculate Tax & Generate Salary Statement</button>
+
+            <div id="results" style="display: none;" class="result-box">
+                <div class="result-item">
+                    <span class="result-label">Gross Salary:</span>
+                    <span class="result-value" id="resGrossSalary">₹0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Total Deductions:</span>
+                    <span class="result-value" id="resDeductions">₹0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Taxable Income:</span>
+                    <span class="result-value" id="resTaxableIncome">₹0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Income Tax:</span>
+                    <span class="result-value" id="resIncomeTax">₹0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Education Cess (4%):</span>
+                    <span class="result-value" id="resCess">₹0</span>
+                </div>
+                <div class="result-item total">
+                    <span class="result-label">Total Tax Payable:</span>
+                    <span class="result-value" id="resTotalTax">₹0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">TDS Deducted:</span>
+                    <span class="result-value" id="resTDS">₹0</span>
+                </div>
+                <div class="result-item total">
+                    <span class="result-label">Tax Balance:</span>
+                    <span class="result-value" id="resBalance">₹0</span>
+                </div>
+            </div>
+
+            <p class="info-text">💡 <strong>Instructions:</strong> Select the month for accurate DA calculation (March-June: 12.25% | July-February: 14.25%). The calculator will auto-compute annual totals and generate a complete Form 16 with month-wise statement.</p>
+            
+            <p class="info-text" style="margin-top: 5px;">📌 <strong>Auto-Calculations:</strong> DA = 12.25% (Mar-Jun) / 14.25% (Jul-Feb) | HRA = 7.5% of Basic | NPS = 10% of (Basic+DA) | PT: ₹200/month | 80C from GPF/NPS + LIC.</p>
+            
+            <p class="info-text" style="margin-top: 5px; background: #e8f5e9; padding: 8px; border-radius: 5px; color: #2e7d32;">
+                <strong>💰 Tax Rebate u/s 87A:</strong> New Regime: ₹25,000 rebate (income up to ₹8 lakh) | Old Regime: ₹12,500 rebate (income up to ₹5 lakh)
+            </p>
+        </div>
+
+        <div id="payslip" class="tab-content">
+            <h3 style="color: #667eea; margin-bottom: 15px; font-size: 16px;">💵 Generate Pay Slip</h3>
+
+            <div class="form-group">
+                <label>Select Employee</label>
+                <select id="payslipEmployee" onchange="loadEmployeeForPayslip()">
+                    <option value="">-- Select Employee --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Select Month</label>
+                <select id="payslipMonth" onchange="calculateDAPayslip(); updatePayslipDAIndicator()">
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                </select>
+                <div id="payslipDAIndicator" style="margin-top: 8px; padding: 8px; border-radius: 5px; font-size: 12px; font-weight: 600; text-align: center;"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Year</label>
+                <select id="payslipYear">
+                    <option value="2026">2026</option>
+                    <option value="2025" selected>2025</option>
+                    <option value="2024">2024</option>
+                </select>
+            </div>
+
+            <h3 style="color: #667eea; margin: 25px 0 15px 0; font-size: 16px;">💰 Earnings (Monthly)</h3>
+
+            <div class="form-group">
+                <label>Basic Pay (₹)</label>
+                <input type="number" id="payBasic" placeholder="e.g., 40000" value="0" onchange="calculateDAPayslip()">
+            </div>
+
+            <div class="form-group">
+                <label>DA - Dearness Allowance (₹) <span style="color: #888; font-size: 11px;">[Auto: 12.25% (Mar-Jun) | 14.25% (Jul-Feb)]</span></label>
+                <input type="number" id="payDA" placeholder="Auto-calculated" value="0" readonly style="background-color: #f5f5f5;">
+            </div>
+
+            <div class="form-group">
+                <label>HRA - House Rent Allowance (₹) <span style="color: #888; font-size: 11px;">[Auto: Basic × 7.5%]</span></label>
+                <input type="number" id="payHRA" placeholder="Auto-calculated" value="0" readonly style="background-color: #f5f5f5;">
+            </div>
+
+            <div class="form-group">
+                <label>MA - Medical Allowance (₹)</label>
+                <input type="number" id="payMA" placeholder="e.g., 1000" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Charge Allowance (₹)</label>
+                <input type="number" id="payCharge" placeholder="e.g., 2000" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Other Allowances (₹)</label>
+                <input type="number" id="payOther" placeholder="e.g., 1500" value="0">
+            </div>
+
+            <h3 style="color: #d32f2f; margin: 25px 0 15px 0; font-size: 16px;">➖ Deductions (Monthly)</h3>
+
+            <div class="form-group">
+                <label>Professional Tax (₹)</label>
+                <input type="number" id="payPT" placeholder="e.g., 200" value="200">
+            </div>
+
+            <div class="form-group">
+                <label>GIS (₹)</label>
+                <input type="number" id="payGIS" placeholder="e.g., 100" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>KGID (₹)</label>
+                <input type="number" id="payKGID" placeholder="e.g., 50" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>LIC (₹)</label>
+                <input type="number" id="payLIC" placeholder="e.g., 1500" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Pension Scheme Type</label>
+                <select id="payPensionType" onchange="handlePayslipPensionTypeChange()">
+                    <option value="none">None</option>
+                    <option value="gpf">GPF (Manual Entry)</option>
+                    <option value="nps">NPS (Auto: 10% of Basic+DA)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="payGPFGroup" style="display: none;">
+                <label id="payGPFLabel">GPF/NPS (₹)</label>
+                <input type="number" id="payGPF" placeholder="Enter amount or auto-calculated" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Income Tax (TDS) (₹)</label>
+                <input type="number" id="payTDS" placeholder="e.g., 3000" value="0">
+            </div>
+
+            <div class="form-group">
+                <label>Other Deductions (₹)</label>
+                <input type="number" id="payOtherDed" placeholder="e.g., 500" value="0">
+            </div>
+
+            <button class="btn" onclick="generatePayslip()">📄 Generate Pay Slip</button>
+
+            <div id="payslipPreview" style="margin-top: 20px;"></div>
+
+            <button class="btn btn-secondary" onclick="downloadPayslip()" style="display: none;" id="downloadPayslipBtn">💾 Download Pay Slip</button>
+            <button class="btn btn-secondary" onclick="sharePayslip()" style="display: none;" id="sharePayslipBtn">📤 Share Pay Slip</button>
+        </div>
+
+        <div id="form16" class="tab-content">
+            <h3 style="color: #667eea; margin-bottom: 15px; font-size: 16px;">📋 Employee Details</h3>
+            
+            <div class="form-group">
+                <label>Employee Name *</label>
+                <input type="text" id="empName" placeholder="Enter full name">
+            </div>
+
+            <div class="form-group">
+                <label>Designation *</label>
+                <input type="text" id="empDesignation" placeholder="e.g., Assistant, Manager, Clerk">
+            </div>
+
+            <div class="form-group">
+                <label>KGID Number</label>
+                <input type="text" id="kgidNumber" placeholder="Enter KGID ID" style="text-transform: uppercase;">
+            </div>
+
+            <div class="form-group">
+                <label>Employee PAN Number *</label>
+                <input type="text" id="panNumber" placeholder="e.g., ABCDE1234F" maxlength="10" style="text-transform: uppercase;">
+            </div>
+
+            <h3 style="color: #667eea; margin: 25px 0 15px 0; font-size: 16px;">🏢 Office Details</h3>
+
+            <div class="form-group">
+                <label>Office Name *</label>
+                <input type="text" id="officeName" placeholder="Enter office name">
+            </div>
+
+            <div class="form-group">
+                <label>Office Address *</label>
+                <textarea id="officeAddress" placeholder="Enter complete office address" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; font-family: inherit; min-height: 70px; resize: vertical;"></textarea>
+            </div>
+
+            <h3 style="color: #667eea; margin: 25px 0 15px 0; font-size: 16px;">👤 DDO Details</h3>
+
+            <div class="form-group">
+                <label>DDO Name *</label>
+                <input type="text" id="ddoName" placeholder="Drawing & Disbursing Officer name">
+            </div>
+
+            <div class="form-group">
+                <label>DDO Designation *</label>
+                <input type="text" id="ddoDesignation" placeholder="e.g., Deputy Commissioner, Assistant Director">
+            </div>
+
+            <div class="form-group">
+                <label>TAN Number *</label>
+                <input type="text" id="tanNumber" placeholder="e.g., ABCD12345E" maxlength="10" style="text-transform: uppercase;">
+            </div>
+
+            <button class="btn" onclick="generateForm16()">Generate Form 16</button>
+
+            <div id="form16Preview"></div>
+
+            <button class="btn btn-secondary" onclick="downloadForm16()" style="display: none;" id="downloadBtn">Download Form 16</button>
+            <button class="btn btn-secondary" onclick="shareForm16()" style="display: none;" id="shareBtn">Save to Drive / Share</button>
+        </div>
+    </div>
+
+    <script>
+        let calculatedData = null;
+
+        // Calculate DA automatically (12.25% Mar-Jun, 14.25% Jul-Feb)
+        function calculateDA() {
+            const basicPay = parseFloat(document.getElementById('basicPay').value) || 0;
+            
+            // Get selected month from calculator dropdown
+            const selectedMonth = parseInt(document.getElementById('calculatorMonth').value); // 1-12
+            let daRate = 14.25; // Default for Jul-Feb (7-2)
+            
+            // March (3), April (4), May (5), June (6) = 12.25%
+            if (selectedMonth >= 3 && selectedMonth <= 6) {
+                daRate = 12.25;
+            }
+            
+            const da = (basicPay * daRate) / 100;
+            document.getElementById('da').value = Math.round(da);
+            
+            // Also calculate HRA (7.5% of Basic Pay)
+            const hra = (basicPay * 7.5) / 100;
+            document.getElementById('hraMonthly').value = Math.round(hra);
+            
+            // Recalculate NPS if selected
+            const pensionType = document.getElementById('pensionType').value;
+            if (pensionType === 'nps') {
+                calculateNPS();
+            }
+        }
+
+        // Calculate DA for payslip based on selected month
+        function calculateDAPayslip() {
+            const basicPay = parseFloat(document.getElementById('payBasic').value) || 0;
+            
+            // Get selected month from payslip
+            const selectedMonth = parseInt(document.getElementById('payslipMonth').value); // 1-12
+            let daRate = 14.25; // Default for Jul-Feb
+            
+            // March (3), April (4), May (5), June (6) = 12.25%
+            if (selectedMonth >= 3 && selectedMonth <= 6) {
+                daRate = 12.25;
+            }
+            
+            const da = (basicPay * daRate) / 100;
+            document.getElementById('payDA').value = Math.round(da);
+            
+            // Also calculate HRA (7.5% of Basic Pay)
+            const hra = (basicPay * 7.5) / 100;
+            document.getElementById('payHRA').value = Math.round(hra);
+            
+            // Recalculate NPS if selected
+            const pensionType = document.getElementById('payPensionType').value;
+            if (pensionType === 'nps') {
+                calculateNPSPayslip();
+            }
+        }
+
+        // Handle pension type change in calculator
+        function handlePensionTypeChange() {
+            const pensionType = document.getElementById('pensionType').value;
+            const gpfNpsGroup = document.getElementById('gpfNpsGroup');
+            const gpfNpsInput = document.getElementById('gpfNps');
+            const gpfNpsLabel = document.getElementById('gpfNpsLabel');
+
+            if (pensionType === 'none') {
+                gpfNpsGroup.style.display = 'none';
+                gpfNpsInput.value = '0';
+            } else if (pensionType === 'gpf') {
+                gpfNpsGroup.style.display = 'block';
+                gpfNpsLabel.textContent = 'GPF Contribution (Monthly) (₹)';
+                gpfNpsInput.placeholder = 'Enter GPF amount';
+                gpfNpsInput.readOnly = false;
+                gpfNpsInput.style.backgroundColor = 'white';
+                gpfNpsInput.value = '0';
+            } else if (pensionType === 'nps') {
+                gpfNpsGroup.style.display = 'block';
+                gpfNpsLabel.innerHTML = 'NPS Contribution (Monthly) (₹) <span style="color: #888; font-size: 11px;">[Auto: 10% of Basic+DA]</span>';
+                gpfNpsInput.placeholder = 'Auto-calculated';
+                gpfNpsInput.readOnly = true;
+                gpfNpsInput.style.backgroundColor = '#f5f5f5';
+                calculateNPS();
+            }
+        }
+
+        // Calculate NPS (10% of Basic + DA)
+        function calculateNPS() {
+            const basicPay = parseFloat(document.getElementById('basicPay').value) || 0;
+            const da = parseFloat(document.getElementById('da').value) || 0;
+            const nps = ((basicPay + da) * 10) / 100;
+            document.getElementById('gpfNps').value = Math.round(nps);
+        }
+
+        // Handle pension type change in payslip
+        function handlePayslipPensionTypeChange() {
+            const pensionType = document.getElementById('payPensionType').value;
+            const payGPFGroup = document.getElementById('payGPFGroup');
+            const payGPFInput = document.getElementById('payGPF');
+            const payGPFLabel = document.getElementById('payGPFLabel');
+
+            if (pensionType === 'none') {
+                payGPFGroup.style.display = 'none';
+                payGPFInput.value = '0';
+            } else if (pensionType === 'gpf') {
+                payGPFGroup.style.display = 'block';
+                payGPFLabel.textContent = 'GPF (₹)';
+                payGPFInput.placeholder = 'Enter GPF amount';
+                payGPFInput.readOnly = false;
+                payGPFInput.style.backgroundColor = 'white';
+                payGPFInput.value = '0';
+            } else if (pensionType === 'nps') {
+                payGPFGroup.style.display = 'block';
+                payGPFLabel.innerHTML = 'NPS (₹) <span style="color: #888; font-size: 11px;">[Auto: 10% of Basic+DA]</span>';
+                payGPFInput.placeholder = 'Auto-calculated';
+                payGPFInput.readOnly = true;
+                payGPFInput.style.backgroundColor = '#f5f5f5';
+                calculateNPSPayslip();
+            }
+        }
+
+        // Calculate NPS for payslip
+        function calculateNPSPayslip() {
+            const basicPay = parseFloat(document.getElementById('payBasic').value) || 0;
+            const da = parseFloat(document.getElementById('payDA').value) || 0;
+            const nps = ((basicPay + da) * 10) / 100;
+            document.getElementById('payGPF').value = Math.round(nps);
+        }
+
+        // Show/hide old regime deductions and update standard deduction
+        document.getElementById('taxRegime').addEventListener('change', function() {
+            const oldDeductions = document.getElementById('oldRegimeDeductions');
+            const standardDeductionInput = document.getElementById('standardDeduction');
+            
+            if (this.value === 'old') {
+                oldDeductions.style.display = 'block';
+                standardDeductionInput.value = '50000';
+            } else {
+                oldDeductions.style.display = 'none';
+                standardDeductionInput.value = '75000';
+            }
+        });
+
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function calculateTax() {
+            const regime = document.getElementById('taxRegime').value;
+            
+            // Get monthly salary components
+            const basicPay = parseFloat(document.getElementById('basicPay').value) || 0;
+            const da = parseFloat(document.getElementById('da').value) || 0;
+            const hraMonthly = parseFloat(document.getElementById('hraMonthly').value) || 0;
+            const ma = parseFloat(document.getElementById('ma').value) || 0;
+            const chargeAllowance = parseFloat(document.getElementById('chargeAllowance').value) || 0;
+            const otherAllowances = parseFloat(document.getElementById('otherAllowances').value) || 0;
+            
+            // Calculate annual gross salary (12 months)
+            const grossSalary = (basicPay + da + hraMonthly + ma + chargeAllowance + otherAllowances) * 12;
+            
+            // Get monthly deductions
+            const professionalTaxMonthly = parseFloat(document.getElementById('professionalTaxMonthly').value) || 0;
+            const gis = parseFloat(document.getElementById('gis').value) || 0;
+            const kgidDeduction = parseFloat(document.getElementById('kgidDeduction').value) || 0;
+            const lic = parseFloat(document.getElementById('lic').value) || 0;
+            const gpfNps = parseFloat(document.getElementById('gpfNps').value) || 0;
+            const otherDeductions = parseFloat(document.getElementById('otherDeductions').value) || 0;
+            
+            // Calculate annual deductions
+            const professionalTax = professionalTaxMonthly * 12;
+            const annualGis = gis * 12;
+            const annualKgid = kgidDeduction * 12;
+            const annualLic = lic * 12;
+            const annualGpfNps = gpfNps * 12;
+            const annualOtherDeductions = otherDeductions * 12;
+            
+            const standardDeduction = regime === 'new' ? 75000 : 50000;
+            const tdsDeducted = parseFloat(document.getElementById('tdsDeducted').value) || 0;
+
+            let totalDeductions = standardDeduction + professionalTax;
+            
+            // Auto-calculate 80C (GPF/NPS + LIC)
+            const deduction80CValue = Math.min(annualGpfNps + annualLic, 150000);
+            
+            if (regime === 'old') {
+                const deduction80D = Math.min(parseFloat(document.getElementById('deduction80D').value) || 0, 25000);
+                
+                // HRA calculation (simplified: 40% of HRA paid)
+                const hraExemption = Math.min(hraMonthly * 12 * 0.4, hraMonthly * 12);
+                
+                // Update readonly fields
+                document.getElementById('deduction80C').value = deduction80CValue;
+                document.getElementById('hra').value = hraExemption;
+                
+                totalDeductions += deduction80CValue + deduction80D + hraExemption;
+            }
+
+            const taxableIncome = Math.max(grossSalary - totalDeductions, 0);
+            
+            let incomeTax = 0;
+            
+            if (regime === 'new') {
+                // New regime slabs for FY 2024-25
+                if (taxableIncome <= 300000) {
+                    incomeTax = 0;
+                } else if (taxableIncome <= 700000) {
+                    incomeTax = (taxableIncome - 300000) * 0.05;
+                } else if (taxableIncome <= 1000000) {
+                    incomeTax = 20000 + (taxableIncome - 700000) * 0.10;
+                } else if (taxableIncome <= 1200000) {
+                    incomeTax = 50000 + (taxableIncome - 1000000) * 0.15;
+                } else if (taxableIncome <= 1500000) {
+                    incomeTax = 80000 + (taxableIncome - 1200000) * 0.20;
+                } else {
+                    incomeTax = 140000 + (taxableIncome - 1500000) * 0.30;
+                }
+            } else {
+                // Old regime slabs
+                if (taxableIncome <= 250000) {
+                    incomeTax = 0;
+                } else if (taxableIncome <= 500000) {
+                    incomeTax = (taxableIncome - 250000) * 0.05;
+                } else if (taxableIncome <= 1000000) {
+                    incomeTax = 12500 + (taxableIncome - 500000) * 0.20;
+                } else {
+                    incomeTax = 112500 + (taxableIncome - 1000000) * 0.30;
+                }
+            }
+
+            // Rebate under 87A
+            if (regime === 'new' && taxableIncome <= 800000) {
+                incomeTax = Math.max(0, incomeTax - 25000);
+            } else if (regime === 'old' && taxableIncome <= 500000) {
+                incomeTax = Math.max(0, incomeTax - 12500);
+            }
+
+            const cess = incomeTax * 0.04;
+            const totalTax = incomeTax + cess;
+            const balance = totalTax - tdsDeducted;
+
+            // Store calculated data with monthly breakup
+            calculatedData = {
+                grossSalary,
+                totalDeductions,
+                taxableIncome,
+                incomeTax,
+                cess,
+                totalTax,
+                tdsDeducted,
+                balance,
+                regime,
+                standardDeduction,
+                monthlyComponents: {
+                    basicPay,
+                    da,
+                    hra: hraMonthly,
+                    ma,
+                    chargeAllowance,
+                    otherAllowances
+                },
+                monthlyDeductions: {
+                    professionalTax: professionalTaxMonthly,
+                    gis,
+                    kgid: kgidDeduction,
+                    lic,
+                    gpfNps,
+                    other: otherDeductions
+                },
+                annualDeductions: {
+                    professionalTax,
+                    gis: annualGis,
+                    kgid: annualKgid,
+                    lic: annualLic,
+                    gpfNps: annualGpfNps,
+                    other: annualOtherDeductions,
+                    deduction80C: regime === 'old' ? deduction80CValue : 0,
+                    deduction80D: regime === 'old' ? parseFloat(document.getElementById('deduction80D').value) || 0 : 0,
+                    hraExemption: regime === 'old' ? parseFloat(document.getElementById('hra').value) || 0 : 0
+                }
+            };
+
+            // Display results
+            document.getElementById('resGrossSalary').textContent = '₹' + grossSalary.toLocaleString('en-IN');
+            document.getElementById('resDeductions').textContent = '₹' + totalDeductions.toLocaleString('en-IN');
+            document.getElementById('resTaxableIncome').textContent = '₹' + taxableIncome.toLocaleString('en-IN');
+            document.getElementById('resIncomeTax').textContent = '₹' + incomeTax.toFixed(2).toLocaleString('en-IN');
+            document.getElementById('resCess').textContent = '₹' + cess.toFixed(2).toLocaleString('en-IN');
+            document.getElementById('resTotalTax').textContent = '₹' + totalTax.toFixed(2).toLocaleString('en-IN');
+            document.getElementById('resTDS').textContent = '₹' + tdsDeducted.toLocaleString('en-IN');
+            document.getElementById('resBalance').textContent = (balance >= 0 ? '₹' : '-₹') + Math.abs(balance).toFixed(2).toLocaleString('en-IN');
+
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function generateForm16() {
+            if (!calculatedData) {
+                alert('Please calculate tax first in the Calculator tab!');
+                return;
+            }
+
+            // Get all employee details
+            const empName = document.getElementById('empName').value;
+            const empDesignation = document.getElementById('empDesignation').value;
+            const kgidNumber = document.getElementById('kgidNumber').value.toUpperCase();
+            const panNumber = document.getElementById('panNumber').value.toUpperCase();
+            const officeName = document.getElementById('officeName').value;
+            const officeAddress = document.getElementById('officeAddress').value;
+            const ddoName = document.getElementById('ddoName').value;
+            const ddoDesignation = document.getElementById('ddoDesignation').value;
+            const tanNumber = document.getElementById('tanNumber').value.toUpperCase();
+            const assessmentYear = document.getElementById('assessmentYear').value;
+
+            // Validation
+            if (!empName || !empDesignation || !panNumber || !officeName || !officeAddress || !ddoName || !ddoDesignation || !tanNumber) {
+                alert('Please fill all mandatory fields marked with *');
+                return;
+            }
+
+            // Determine financial year from assessment year
+            let financialYear = '';
+            if (assessmentYear === '2026-27') {
+                financialYear = '2025-26';
+            } else if (assessmentYear === '2025-26') {
+                financialYear = '2024-25';
+            } else if (assessmentYear === '2024-25') {
+                financialYear = '2023-24';
+            }
+
+            const form16HTML = `
+                <div class="form16-header">
+                    <div style="font-size: 16px;">FORM 16</div>
+                    <div style="font-size: 12px;">Certificate under section 203 of the Income-tax Act, 1961</div>
+                    <div style="font-size: 12px;">for tax deducted at source on salary</div>
+                    <div style="font-size: 11px; margin-top: 10px;">[See rule 31(1)(a)]</div>
+                </div>
+
+                <div class="form16-section">
+                    <div class="form16-row">
+                        <span><b>Financial Year:</b></span>
+                        <span>${financialYear}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span><b>Assessment Year:</b></span>
+                        <span>${assessmentYear}</span>
+                    </div>
+                </div>
+
+                <div class="form16-section">
+                    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">Part A - Details of Employer/DDO</div>
+                    <div class="form16-row">
+                        <span>Name of Office:</span>
+                        <span>${officeName}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>Office Address:</span>
+                        <span style="text-align: right; max-width: 60%;">${officeAddress.replace(/\n/g, ', ')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>TAN of the Deductor:</span>
+                        <span><b>${tanNumber}</b></span>
+                    </div>
+                    <div class="form16-row">
+                        <span>DDO Name:</span>
+                        <span>${ddoName}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>DDO Designation:</span>
+                        <span>${ddoDesignation}</span>
+                    </div>
+                </div>
+
+                <div class="form16-section">
+                    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">Part B - Details of Employee</div>
+                    <div class="form16-row">
+                        <span>Name of Employee:</span>
+                        <span><b>${empName}</b></span>
+                    </div>
+                    <div class="form16-row">
+                        <span>Designation:</span>
+                        <span>${empDesignation}</span>
+                    </div>
+                    ${kgidNumber ? `<div class="form16-row">
+                        <span>KGID Number:</span>
+                        <span>${kgidNumber}</span>
+                    </div>` : ''}
+                    <div class="form16-row">
+                        <span>PAN of the Employee:</span>
+                        <span><b>${panNumber}</b></span>
+                    </div>
+                </div>
+
+                <div class="form16-section" style="page-break-before: always;">
+                    <div style="font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 5px; font-size: 13px;">ANNEXURE - Salary and Deduction Statement (March to February)</div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background: #f0f0f0; border: 1px solid #000;">
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: left;">Month</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">Basic Pay</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">DA</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">HRA</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">MA</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">Charge Allow.</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">Other</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right; font-weight: bold;">Gross</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'].map((month, index) => {
+                                    // Determine DA rate based on month
+                                    // Mar(0), Apr(1), May(2), Jun(3) = 12.25%
+                                    // Jul(4), Aug(5), Sep(6), Oct(7), Nov(8), Dec(9), Jan(10), Feb(11) = 14.25%
+                                    const daRate = index <= 3 ? 12.25 : 14.25;
+                                    const monthlyDA = Math.round((calculatedData.monthlyComponents.basicPay * daRate) / 100);
+                                    
+                                    const monthlyGross = calculatedData.monthlyComponents.basicPay + 
+                                                        monthlyDA + 
+                                                        calculatedData.monthlyComponents.hra + 
+                                                        calculatedData.monthlyComponents.ma + 
+                                                        calculatedData.monthlyComponents.chargeAllowance + 
+                                                        calculatedData.monthlyComponents.otherAllowances;
+                                    return `<tr style="border: 1px solid #000;">
+                                        <td style="border: 1px solid #000; padding: 4px;">${month}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyComponents.basicPay.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${monthlyDA.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyComponents.hra.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyComponents.ma.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyComponents.chargeAllowance.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyComponents.otherAllowances.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${monthlyGross.toLocaleString('en-IN')}</td>
+                                    </tr>`;
+                                }).join('')}
+                                <tr style="background: #e8e8e8; border: 2px solid #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 4px;">TOTAL</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(calculatedData.monthlyComponents.basicPay * 12).toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(() => {
+                                        // Calculate total DA: 4 months at 12.25% + 8 months at 14.25%
+                                        const basic = calculatedData.monthlyComponents.basicPay;
+                                        const daMarToJun = Math.round((basic * 12.25) / 100) * 4;
+                                        const daJulToFeb = Math.round((basic * 14.25) / 100) * 8;
+                                        return (daMarToJun + daJulToFeb).toLocaleString('en-IN');
+                                    })()}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(calculatedData.monthlyComponents.hra * 12).toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(calculatedData.monthlyComponents.ma * 12).toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(calculatedData.monthlyComponents.chargeAllowance * 12).toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(calculatedData.monthlyComponents.otherAllowances * 12).toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(() => {
+                                        const basic = calculatedData.monthlyComponents.basicPay;
+                                        const daMarToJun = Math.round((basic * 12.25) / 100) * 4;
+                                        const daJulToFeb = Math.round((basic * 14.25) / 100) * 8;
+                                        const totalDA = daMarToJun + daJulToFeb;
+                                        const totalGross = (basic * 12) + totalDA + (calculatedData.monthlyComponents.hra * 12) + 
+                                                          (calculatedData.monthlyComponents.ma * 12) + (calculatedData.monthlyComponents.chargeAllowance * 12) + 
+                                                          (calculatedData.monthlyComponents.otherAllowances * 12);
+                                        return totalGross.toLocaleString('en-IN');
+                                    })()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="font-weight: bold; margin: 20px 0 10px 0; font-size: 12px;">Monthly Deductions Breakup:</div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background: #f0f0f0; border: 1px solid #000;">
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: left;">Month</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">PT</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">GIS</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">KGID</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">LIC</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">GPF/NPS</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right;">Other</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right; font-weight: bold;">Total Ded.</th>
+                                    <th style="border: 1px solid #000; padding: 6px; text-align: right; font-weight: bold; background: #e0f7e0;">Net Pay</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'].map(month => {
+                                    const monthlyGross = calculatedData.monthlyComponents.basicPay + 
+                                                        calculatedData.monthlyComponents.da + 
+                                                        calculatedData.monthlyComponents.hra + 
+                                                        calculatedData.monthlyComponents.ma + 
+                                                        calculatedData.monthlyComponents.chargeAllowance + 
+                                                        calculatedData.monthlyComponents.otherAllowances;
+                                    const monthlyDed = calculatedData.monthlyDeductions.professionalTax +
+                                                      calculatedData.monthlyDeductions.gis +
+                                                      calculatedData.monthlyDeductions.kgid +
+                                                      calculatedData.monthlyDeductions.lic +
+                                                      calculatedData.monthlyDeductions.gpfNps +
+                                                      calculatedData.monthlyDeductions.other;
+                                    const netPay = monthlyGross - monthlyDed;
+                                    return `<tr style="border: 1px solid #000;">
+                                        <td style="border: 1px solid #000; padding: 4px;">${month}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyDeductions.professionalTax.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyDeductions.gis.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyDeductions.kgid.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyDeductions.lic.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyDeductions.gpfNps.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.monthlyDeductions.other.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold;">${monthlyDed.toLocaleString('en-IN')}</td>
+                                        <td style="border: 1px solid #000; padding: 4px; text-align: right; font-weight: bold; background: #e0f7e0;">${netPay.toLocaleString('en-IN')}</td>
+                                    </tr>`;
+                                }).join('')}
+                                <tr style="background: #e8e8e8; border: 2px solid #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 4px;">TOTAL</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.annualDeductions.professionalTax.toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.annualDeductions.gis.toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.annualDeductions.kgid.toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.annualDeductions.lic.toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.annualDeductions.gpfNps.toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${calculatedData.annualDeductions.other.toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right;">${(calculatedData.annualDeductions.professionalTax + calculatedData.annualDeductions.gis + calculatedData.annualDeductions.kgid + calculatedData.annualDeductions.lic + calculatedData.annualDeductions.gpfNps + calculatedData.annualDeductions.other).toLocaleString('en-IN')}</td>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: right; background: #c8e6c9;">${(calculatedData.grossSalary - (calculatedData.annualDeductions.professionalTax + calculatedData.annualDeductions.gis + calculatedData.annualDeductions.kgid + calculatedData.annualDeductions.lic + calculatedData.annualDeductions.gpfNps + calculatedData.annualDeductions.other)).toLocaleString('en-IN')}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form16-section">
+                    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">Details of Salary Paid and Tax Deducted</div>
+                    <div class="form16-row">
+                        <span>1. Gross Salary (as per section 17(1))</span>
+                        <span>₹ ${calculatedData.grossSalary.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>2. Less: Allowances to the extent exempt u/s 10</span>
+                        <span>₹ 0</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>3. Balance (1-2)</span>
+                        <span>₹ ${calculatedData.grossSalary.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>4. Deductions:</span>
+                        <span></span>
+                    </div>
+                    <div class="form16-row" style="padding-left: 20px;">
+                        <span>   a) Standard Deduction u/s 16(ia)</span>
+                        <span>₹ ${(calculatedData.regime === 'new' ? '75,000' : '50,000')}</span>
+                    </div>
+                    <div class="form16-row" style="padding-left: 20px;">
+                        <span>   b) Professional Tax u/s 16(iii)</span>
+                        <span>₹ ${(calculatedData.totalDeductions - (calculatedData.regime === 'new' ? 75000 : 50000)).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>5. Total Deductions</span>
+                        <span>₹ ${calculatedData.totalDeductions.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span><b>6. Income chargeable under head 'Salaries' (3-5)</b></span>
+                        <span><b>₹ ${calculatedData.taxableIncome.toLocaleString('en-IN')}</b></span>
+                    </div>
+                </div>
+
+                <div class="form16-section">
+                    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">Computation of Tax Liability (${calculatedData.regime === 'new' ? 'New Tax Regime u/s 115BAC' : 'Old Tax Regime'})</div>
+                    <div class="form16-row">
+                        <span>7. Gross Total Income (6)</span>
+                        <span>₹ ${calculatedData.taxableIncome.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>8. Deductions under Chapter VI-A</span>
+                        <span>₹ 0</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>9. Total Income (7-8)</span>
+                        <span>₹ ${calculatedData.taxableIncome.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>10. Tax on Total Income</span>
+                        <span>₹ ${calculatedData.incomeTax.toFixed(2).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span>11. Education Cess @ 4%</span>
+                        <span>₹ ${calculatedData.cess.toFixed(2).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row">
+                        <span><b>12. Total Tax and Cess (10+11)</b></span>
+                        <span><b>₹ ${calculatedData.totalTax.toFixed(2).toLocaleString('en-IN')}</b></span>
+                    </div>
+                    <div class="form16-row">
+                        <span>13. Less: Relief under section 89</span>
+                        <span>₹ 0</span>
+                    </div>
+                    <div class="form16-row">
+                        <span><b>14. Tax Payable (12-13)</b></span>
+                        <span><b>₹ ${calculatedData.totalTax.toFixed(2).toLocaleString('en-IN')}</b></span>
+                    </div>
+                </div>
+
+                <div class="form16-section">
+                    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">Tax Deducted at Source</div>
+                    <div class="form16-row">
+                        <span>15. Tax Deducted at Source (TDS)</span>
+                        <span>₹ ${calculatedData.tdsDeducted.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="form16-row" style="border-bottom: 2px solid #000;">
+                        <span><b>16. Tax Balance ${calculatedData.balance >= 0 ? 'Payable' : 'Refundable'}</b></span>
+                        <span style="color: ${calculatedData.balance >= 0 ? '#d32f2f' : '#388e3c'};"><b>${calculatedData.balance >= 0 ? '₹' : '-₹'} ${Math.abs(calculatedData.balance).toFixed(2).toLocaleString('en-IN')}</b></span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 11px; margin-bottom: 5px;">Place: _____________</div>
+                            <div style="font-size: 11px;">Date: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="margin-bottom: 40px; font-size: 11px;">Signature of Employee</div>
+                            <div style="border-top: 1px solid #000; padding-top: 5px; min-width: 200px; font-size: 10px;">
+                                ${empName}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #999;">
+                    <div style="font-weight: bold; margin-bottom: 10px; font-size: 12px;">Verification</div>
+                    <div style="font-size: 11px; margin-bottom: 20px;">
+                        I, <b>${ddoName}</b>, <b>${ddoDesignation}</b>, do hereby certify that the information given above is true, complete and correct and is based on the books of account, documents, TDS statements and other available records.
+                    </div>
+                    <div style="text-align: right; margin-top: 40px;">
+                        <div style="font-size: 11px; margin-bottom: 40px;">Signature of DDO</div>
+                        <div style="border-top: 1px solid #000; display: inline-block; padding-top: 5px; min-width: 200px; font-size: 10px;">
+                            ${ddoName}<br>
+                            ${ddoDesignation}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 11px;">
+                            Full Name and Designation of the person responsible<br>for deduction of tax
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 10px; text-align: center; color: #666;">
+                    This is a computer generated Form 16. Generated on ${new Date().toLocaleDateString('en-IN')}
+                </div>
+            `;
+
+            document.getElementById('form16Preview').innerHTML = form16HTML;
+            document.getElementById('downloadBtn').style.display = 'block';
+            document.getElementById('shareBtn').style.display = 'block';
+        }
+
+        function downloadForm16() {
+            const empName = document.getElementById('empName').value || 'Employee';
+            const kgidNumber = document.getElementById('kgidNumber').value.toUpperCase();
+            const form16Content = document.getElementById('form16Preview').innerHTML;
+            
+            const fullHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Form 16 - ${empName}${kgidNumber ? ' - ' + kgidNumber : ''}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; }
+                        .form16-header { text-align: center; font-weight: bold; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                        .form16-section { margin-bottom: 20px; page-break-inside: avoid; }
+                        .form16-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccc; }
+                        @media print {
+                            body { padding: 20px; }
+                            .form16-section { page-break-inside: avoid; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${form16Content}
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fileName = kgidNumber ? 
+                `Form16_${empName}_${kgidNumber}_${new Date().getFullYear()}.html` : 
+                `Form16_${empName}_${new Date().getFullYear()}.html`;
+            a.download = fileName.replace(/\s+/g, '_');
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function shareForm16() {
+            const empName = document.getElementById('empName').value || 'Employee';
+            const kgidNumber = document.getElementById('kgidNumber').value.toUpperCase();
+            const form16Content = document.getElementById('form16Preview').innerHTML;
+            
+            const fullHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Form 16 - ${empName}${kgidNumber ? ' - ' + kgidNumber : ''}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; }
+                        .form16-header { text-align: center; font-weight: bold; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                        .form16-section { margin-bottom: 20px; page-break-inside: avoid; }
+                        .form16-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccc; }
+                        @media print {
+                            body { padding: 20px; }
+                            .form16-section { page-break-inside: avoid; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${form16Content}
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const fileName = kgidNumber ? 
+                `Form16_${empName}_${kgidNumber}_${new Date().getFullYear()}.html` : 
+                `Form16_${empName}_${new Date().getFullYear()}.html`;
+            const file = new File([blob], fileName.replace(/\s+/g, '_'), { type: 'text/html' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                    files: [file],
+                    title: 'Form 16',
+                    text: `Form 16 for ${empName}${kgidNumber ? ' (' + kgidNumber + ')' : ''}`
+                }).catch(err => {
+                    console.log('Share failed:', err);
+                    downloadForm16();
+                });
+            } else {
+                alert('Share not supported on this device. File will be downloaded instead.\n\nTo save to Google Drive:\n1. Download the file\n2. Open Google Drive app\n3. Upload the downloaded file');
+                downloadForm16();
+            }
+        }
+    </script>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">➕ Add New Employee</h2>
+                <button class="close" onclick="closeEmployeeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editEmployeeId" value="">
+                
+                <div class="form-group">
+                    <label>Employee Name *</label>
+                    <input type="text" id="modalEmpName" placeholder="Enter full name">
+                </div>
+
+                <div class="form-group">
+                    <label>KGID Number *</label>
+                    <input type="text" id="modalKgid" placeholder="Enter KGID ID" style="text-transform: uppercase;">
+                </div>
+
+                <div class="form-group">
+                    <label>Designation *</label>
+                    <input type="text" id="modalDesignation" placeholder="e.g., Assistant, Clerk">
+                </div>
+
+                <div class="form-group">
+                    <label>PAN Number *</label>
+                    <input type="text" id="modalPan" placeholder="e.g., ABCDE1234F" maxlength="10" style="text-transform: uppercase;">
+                </div>
+
+                <div class="form-group">
+                    <label>Office Name</label>
+                    <input type="text" id="modalOffice" placeholder="Enter office name">
+                </div>
+
+                <div class="form-group">
+                    <label>Basic Pay (Monthly)</label>
+                    <input type="number" id="modalBasicPay" placeholder="e.g., 40000" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Pension Scheme</label>
+                    <select id="modalPensionType">
+                        <option value="none">None</option>
+                        <option value="gpf">GPF</option>
+                        <option value="nps">NPS</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="saveEmployee()">💾 Save Employee</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Employee Management System
+        let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+        let currentEmployeeId = null;
+
+        // Initialize dashboard
+        function initDashboard() {
+            loadEmployees();
+            updateStats();
+        }
+
+        // Show add employee modal
+        function showAddEmployeeModal() {
+            document.getElementById('modalTitle').textContent = '➕ Add New Employee';
+            document.getElementById('editEmployeeId').value = '';
+            document.getElementById('modalEmpName').value = '';
+            document.getElementById('modalKgid').value = '';
+            document.getElementById('modalDesignation').value = '';
+            document.getElementById('modalPan').value = '';
+            document.getElementById('modalOffice').value = '';
+            document.getElementById('modalBasicPay').value = '0';
+            document.getElementById('modalPensionType').value = 'none';
+            document.getElementById('employeeModal').style.display = 'block';
+        }
+
+        // Close modal
+        function closeEmployeeModal() {
+            document.getElementById('employeeModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('employeeModal');
+            if (event.target == modal) {
+                closeEmployeeModal();
+            }
+        }
+
+        // Save employee
+        function saveEmployee() {
+            const name = document.getElementById('modalEmpName').value.trim();
+            const kgid = document.getElementById('modalKgid').value.trim().toUpperCase();
+            const designation = document.getElementById('modalDesignation').value.trim();
+            const pan = document.getElementById('modalPan').value.trim().toUpperCase();
+            const office = document.getElementById('modalOffice').value.trim();
+            const basicPay = parseFloat(document.getElementById('modalBasicPay').value) || 0;
+            const pensionType = document.getElementById('modalPensionType').value;
+            const editId = document.getElementById('editEmployeeId').value;
+
+            if (!name || !kgid || !designation || !pan) {
+                alert('Please fill all mandatory fields (Name, KGID, Designation, PAN)');
+                return;
+            }
+
+            const employee = {
+                id: editId || Date.now().toString(),
+                name,
+                kgid,
+                designation,
+                pan,
+                office,
+                basicPay,
+                pensionType,
+                hasCalculation: false,
+                hasForm16: false,
+                createdAt: editId ? employees.find(e => e.id === editId).createdAt : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            if (editId) {
+                const index = employees.findIndex(e => e.id === editId);
+                employees[index] = employee;
+            } else {
+                employees.push(employee);
+            }
+
+            localStorage.setItem('employees', JSON.stringify(employees));
+            closeEmployeeModal();
+            loadEmployees();
+            updateStats();
+        }
+
+        // Load and display employees
+        function loadEmployees() {
+            const employeeList = document.getElementById('employeeList');
+            const noEmployees = document.getElementById('noEmployees');
+            const searchTerm = document.getElementById('searchEmployee').value.toLowerCase();
+
+            const filteredEmployees = employees.filter(emp => 
+                emp.name.toLowerCase().includes(searchTerm) || 
+                emp.kgid.toLowerCase().includes(searchTerm)
+            );
+
+            if (filteredEmployees.length === 0) {
+                employeeList.innerHTML = '';
+                noEmployees.style.display = 'block';
+                return;
+            }
+
+            noEmployees.style.display = 'none';
+            employeeList.innerHTML = filteredEmployees.map(emp => `
+                <div class="employee-card">
+                    <div class="employee-card-header">
+                        <div class="employee-name">👤 ${emp.name}</div>
+                        <div class="employee-kgid">${emp.kgid}</div>
+                    </div>
+                    <div class="employee-details">
+                        <div>📋 ${emp.designation}</div>
+                        <div>🆔 ${emp.pan}</div>
+                        <div>🏢 ${emp.office || 'N/A'}</div>
+                        <div>💰 ₹${emp.basicPay.toLocaleString('en-IN')}/month</div>
+                    </div>
+                    <div>
+                        <span class="status-badge ${emp.hasCalculation ? 'status-completed' : 'status-pending'}">
+                            ${emp.hasCalculation ? '✓ Calculated' : '⏳ Pending'}
+                        </span>
+                        ${emp.hasForm16 ? '<span class="status-badge status-completed">📄 Form 16</span>' : ''}
+                        ${emp.savedCalculation ? '<span class="status-badge" style="background: #e3f2fd; color: #1565c0;">💾 Data Saved</span>' : ''}
+                    </div>
+                    ${emp.savedCalculation && emp.savedCalculation.savedDate ? `<div style="font-size: 11px; color: #888; margin-top: 5px;">Last updated: ${new Date(emp.savedCalculation.savedDate).toLocaleDateString('en-IN')}</div>` : ''}
+                    <div class="employee-actions">
+                        <button class="btn-small btn-edit" onclick="editEmployee('${emp.id}')">✏️ Edit</button>
+                        <button class="btn-small btn-calculate" onclick="calculateForEmployee('${emp.id}')">🧮 Calculate</button>
+                        <button class="btn-small" style="background: #43a047; color: white;" onclick="generatePayslipForEmployee('${emp.id}')">💵 Pay Slip</button>
+                        <button class="btn-small btn-delete" onclick="deleteEmployee('${emp.id}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search employees
+        function searchEmployees() {
+            loadEmployees();
+        }
+
+        // Edit employee
+        function editEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+
+            document.getElementById('modalTitle').textContent = '✏️ Edit Employee';
+            document.getElementById('editEmployeeId').value = employee.id;
+            document.getElementById('modalEmpName').value = employee.name;
+            document.getElementById('modalKgid').value = employee.kgid;
+            document.getElementById('modalDesignation').value = employee.designation;
+            document.getElementById('modalPan').value = employee.pan;
+            document.getElementById('modalOffice').value = employee.office;
+            document.getElementById('modalBasicPay').value = employee.basicPay;
+            document.getElementById('modalPensionType').value = employee.pensionType || 'none';
+            document.getElementById('employeeModal').style.display = 'block';
+        }
+
+        // Delete employee
+        function deleteEmployee(id) {
+            if (!confirm('Are you sure you want to delete this employee?')) return;
+            
+            employees = employees.filter(e => e.id !== id);
+            localStorage.setItem('employees', JSON.stringify(employees));
+            loadEmployees();
+            updateStats();
+        }
+
+        // Calculate for employee
+        function calculateForEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+
+            currentEmployeeId = id;
+
+            // Check if employee has saved calculation data
+            if (employee.savedCalculation) {
+                // Pre-fill all salary components
+                document.getElementById('basicPay').value = employee.savedCalculation.basicPay || employee.basicPay;
+                document.getElementById('da').value = employee.savedCalculation.da || 0;
+                document.getElementById('hraMonthly').value = employee.savedCalculation.hra || 0;
+                document.getElementById('ma').value = employee.savedCalculation.ma || 0;
+                document.getElementById('chargeAllowance').value = employee.savedCalculation.chargeAllowance || 0;
+                document.getElementById('otherAllowances').value = employee.savedCalculation.otherAllowances || 0;
+                
+                // Pre-fill deductions
+                document.getElementById('professionalTaxMonthly').value = employee.savedCalculation.professionalTax || 0;
+                document.getElementById('gis').value = employee.savedCalculation.gis || 0;
+                document.getElementById('kgidDeduction').value = employee.savedCalculation.kgid || 0;
+                document.getElementById('lic').value = employee.savedCalculation.lic || 0;
+                document.getElementById('otherDeductions').value = employee.savedCalculation.otherDeductions || 0;
+                document.getElementById('tdsDeducted').value = employee.savedCalculation.tdsDeducted || 0;
+                
+                // Set pension type and value
+                document.getElementById('pensionType').value = employee.savedCalculation.pensionType || employee.pensionType || 'none';
+                handlePensionTypeChange();
+                if (employee.savedCalculation.pensionType === 'gpf') {
+                    document.getElementById('gpfNps').value = employee.savedCalculation.gpfNps || 0;
+                }
+                
+                // Set tax regime and assessment year
+                document.getElementById('taxRegime').value = employee.savedCalculation.taxRegime || 'new';
+                document.getElementById('assessmentYear').value = employee.savedCalculation.assessmentYear || '2026-27';
+                
+                // Trigger regime change to show/hide old regime fields
+                const event = new Event('change');
+                document.getElementById('taxRegime').dispatchEvent(event);
+                
+                // Set 80D if old regime
+                if (employee.savedCalculation.taxRegime === 'old') {
+                    document.getElementById('deduction80D').value = employee.savedCalculation.deduction80D || 0;
+                }
+            } else {
+                // Just pre-fill basic data
+                document.getElementById('basicPay').value = employee.basicPay;
+                calculateDA(); // Auto-calculate DA and HRA
+                
+                // Set pension type
+                document.getElementById('pensionType').value = employee.pensionType || 'none';
+                handlePensionTypeChange();
+            }
+            
+            // Pre-fill employee details for Form 16
+            document.getElementById('empName').value = employee.name;
+            document.getElementById('empDesignation').value = employee.designation;
+            document.getElementById('kgidNumber').value = employee.kgid;
+            document.getElementById('panNumber').value = employee.pan;
+            document.getElementById('officeName').value = employee.office;
+
+            // Switch to calculator tab
+            showTab('calculator');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            if (employee.savedCalculation) {
+                alert(`Loaded saved calculation for ${employee.name}. All salary components pre-filled. Review and click Calculate to update.`);
+            } else {
+                alert(`Pre-filled calculator for ${employee.name}. Enter remaining salary components and click Calculate.`);
+            }
+        }
+
+        // Generate pay slip for employee from dashboard
+        function generatePayslipForEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+
+            currentEmployeeId = id;
+
+            // Switch to payslip tab
+            showTab('payslip');
+            
+            // Select the employee in dropdown
+            document.getElementById('payslipEmployee').value = id;
+            
+            // Set pension type first
+            document.getElementById('payPensionType').value = employee.pensionType || 'none';
+            handlePayslipPensionTypeChange();
+            
+            // Then load employee data
+            loadEmployeeForPayslip();
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            alert(`Pre-filled pay slip form for ${employee.name}. Review amounts and click Generate Pay Slip.`);
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('completedCalculations').textContent = employees.filter(e => e.hasCalculation).length;
+            document.getElementById('generatedForms').textContent = employees.filter(e => e.hasForm16).length;
+        }
+
+        // Modified showTab function
+        const originalShowTab = showTab;
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Find and activate the correct tab button
+            tabs.forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(tabName.toLowerCase())) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'dashboard') {
+                initDashboard();
+            }
+        }
+
+        // Override the calculateTax function to mark employee as calculated and save data
+        const originalCalculateTax = calculateTax;
+        window.calculateTax = function() {
+            originalCalculateTax();
+            
+            if (currentEmployeeId) {
+                const empIndex = employees.findIndex(e => e.id === currentEmployeeId);
+                if (empIndex !== -1) {
+                    // Save all salary component data
+                    employees[empIndex].hasCalculation = true;
+                    employees[empIndex].savedCalculation = {
+                        basicPay: parseFloat(document.getElementById('basicPay').value) || 0,
+                        da: parseFloat(document.getElementById('da').value) || 0,
+                        hra: parseFloat(document.getElementById('hraMonthly').value) || 0,
+                        ma: parseFloat(document.getElementById('ma').value) || 0,
+                        chargeAllowance: parseFloat(document.getElementById('chargeAllowance').value) || 0,
+                        otherAllowances: parseFloat(document.getElementById('otherAllowances').value) || 0,
+                        professionalTax: parseFloat(document.getElementById('professionalTaxMonthly').value) || 0,
+                        gis: parseFloat(document.getElementById('gis').value) || 0,
+                        kgid: parseFloat(document.getElementById('kgidDeduction').value) || 0,
+                        lic: parseFloat(document.getElementById('lic').value) || 0,
+                        gpfNps: parseFloat(document.getElementById('gpfNps').value) || 0,
+                        otherDeductions: parseFloat(document.getElementById('otherDeductions').value) || 0,
+                        pensionType: document.getElementById('pensionType').value,
+                        tdsDeducted: parseFloat(document.getElementById('tdsDeducted').value) || 0,
+                        taxRegime: document.getElementById('taxRegime').value,
+                        assessmentYear: document.getElementById('assessmentYear').value,
+                        deduction80D: document.getElementById('taxRegime').value === 'old' ? (parseFloat(document.getElementById('deduction80D').value) || 0) : 0,
+                        savedDate: new Date().toISOString()
+                    };
+                    localStorage.setItem('employees', JSON.stringify(employees));
+                    updateStats();
+                }
+            }
+        };
+
+        // Override generateForm16 to mark employee as having Form 16
+        const originalGenerateForm16 = generateForm16;
+        window.generateForm16 = function() {
+            originalGenerateForm16();
+            
+            if (currentEmployeeId) {
+                const empIndex = employees.findIndex(e => e.id === currentEmployeeId);
+                if (empIndex !== -1) {
+                    employees[empIndex].hasForm16 = true;
+                    localStorage.setItem('employees', JSON.stringify(employees));
+                }
+            }
+        };
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            initDashboard();
+            loadEmployeesForPayslip();
+            setCurrentMonth();
+        });
+
+        // Set current month in dropdowns
+        function setCurrentMonth() {
+            const currentDate = new Date();
+            const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+            
+            // Set calculator month
+            const calcMonthSelect = document.getElementById('calculatorMonth');
+            if (calcMonthSelect) {
+                calcMonthSelect.value = currentMonth;
+                updateDAIndicator();
+            }
+            
+            // Set payslip month
+            const payslipMonthSelect = document.getElementById('payslipMonth');
+            if (payslipMonthSelect) {
+                payslipMonthSelect.value = currentMonth;
+                updatePayslipDAIndicator();
+            }
+        }
+
+        // Update DA rate indicator in calculator
+        function updateDAIndicator() {
+            const selectedMonth = parseInt(document.getElementById('calculatorMonth').value);
+            const indicator = document.getElementById('daRateIndicator');
+            
+            if (selectedMonth >= 3 && selectedMonth <= 6) {
+                indicator.innerHTML = '📊 DA Rate: 12.25% (March to June Period)';
+                indicator.style.background = '#fff3cd';
+                indicator.style.color = '#856404';
+            } else {
+                indicator.innerHTML = '📊 DA Rate: 14.25% (July to February Period)';
+                indicator.style.background = '#d4edda';
+                indicator.style.color = '#155724';
+            }
+        }
+
+        // Update DA rate indicator in payslip
+        function updatePayslipDAIndicator() {
+            const selectedMonth = parseInt(document.getElementById('payslipMonth').value);
+            const indicator = document.getElementById('payslipDAIndicator');
+            
+            if (selectedMonth >= 3 && selectedMonth <= 6) {
+                indicator.innerHTML = '📊 DA Rate: 12.25% (March to June Period)';
+                indicator.style.background = '#fff3cd';
+                indicator.style.color = '#856404';
+            } else {
+                indicator.innerHTML = '📊 DA Rate: 14.25% (July to February Period)';
+                indicator.style.background = '#d4edda';
+                indicator.style.color = '#155724';
+            }
+        }
+
+        // Pay Slip Functions
+        function loadEmployeesForPayslip() {
+            const select = document.getElementById('payslipEmployee');
+            select.innerHTML = '<option value="">-- Select Employee --</option>';
+            
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = `${emp.name} (${emp.kgid})`;
+                select.appendChild(option);
+            });
+        }
+
+        function loadEmployeeForPayslip() {
+            const empId = document.getElementById('payslipEmployee').value;
+            if (!empId) return;
+
+            const employee = employees.find(e => e.id === empId);
+            if (!employee) return;
+
+            // Check if employee has saved calculation data
+            if (employee.savedCalculation) {
+                // Pre-fill from saved calculation
+                document.getElementById('payBasic').value = employee.savedCalculation.basicPay || employee.basicPay;
+                document.getElementById('payDA').value = employee.savedCalculation.da || 0;
+                document.getElementById('payHRA').value = employee.savedCalculation.hra || 0;
+                document.getElementById('payMA').value = employee.savedCalculation.ma || 0;
+                document.getElementById('payCharge').value = employee.savedCalculation.chargeAllowance || 0;
+                document.getElementById('payOther').value = employee.savedCalculation.otherAllowances || 0;
+                
+                document.getElementById('payPT').value = employee.savedCalculation.professionalTax || 200;
+                document.getElementById('payGIS').value = employee.savedCalculation.gis || 0;
+                document.getElementById('payKGID').value = employee.savedCalculation.kgid || 0;
+                document.getElementById('payLIC').value = employee.savedCalculation.lic || 0;
+                document.getElementById('payOtherDed').value = employee.savedCalculation.otherDeductions || 0;
+                
+                // Set pension type and value
+                document.getElementById('payPensionType').value = employee.savedCalculation.pensionType || employee.pensionType || 'none';
+                handlePayslipPensionTypeChange();
+                if (employee.savedCalculation.pensionType === 'gpf') {
+                    document.getElementById('payGPF').value = employee.savedCalculation.gpfNps || 0;
+                }
+                
+                // TDS from calculation
+                const monthlyTDS = employee.savedCalculation.tdsDeducted ? Math.round(employee.savedCalculation.tdsDeducted / 12) : 0;
+                document.getElementById('payTDS').value = monthlyTDS;
+            } else {
+                // Pre-fill with employee's basic data
+                document.getElementById('payBasic').value = employee.basicPay || 0;
+                calculateDAPayslip(); // Auto-calculate DA and HRA
+            }
+        }
+
+        function generatePayslip() {
+            const empId = document.getElementById('payslipEmployee').value;
+            if (!empId) {
+                alert('Please select an employee');
+                return;
+            }
+
+            const employee = employees.find(e => e.id === empId);
+            const month = document.getElementById('payslipMonth').value;
+            const year = document.getElementById('payslipYear').value;
+            
+            // Get month name
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthName = monthNames[parseInt(month) - 1];
+
+            // Earnings
+            const basic = parseFloat(document.getElementById('payBasic').value) || 0;
+            const da = parseFloat(document.getElementById('payDA').value) || 0;
+            const hra = parseFloat(document.getElementById('payHRA').value) || 0;
+            const ma = parseFloat(document.getElementById('payMA').value) || 0;
+            const charge = parseFloat(document.getElementById('payCharge').value) || 0;
+            const other = parseFloat(document.getElementById('payOther').value) || 0;
+            const totalEarnings = basic + da + hra + ma + charge + other;
+
+            // Deductions
+            const pt = parseFloat(document.getElementById('payPT').value) || 0;
+            const gis = parseFloat(document.getElementById('payGIS').value) || 0;
+            const kgid = parseFloat(document.getElementById('payKGID').value) || 0;
+            const lic = parseFloat(document.getElementById('payLIC').value) || 0;
+            const gpf = parseFloat(document.getElementById('payGPF').value) || 0;
+            const tds = parseFloat(document.getElementById('payTDS').value) || 0;
+            const otherDed = parseFloat(document.getElementById('payOtherDed').value) || 0;
+            const totalDeductions = pt + gis + kgid + lic + gpf + tds + otherDed;
+
+            const netPay = totalEarnings - totalDeductions;
+
+            const payslipHTML = `
+                <div class="payslip-container">
+                    <div class="payslip-header">
+                        <div class="payslip-title">PAY SLIP</div>
+                        <div class="payslip-subtitle">Month: ${monthName} ${year}</div>
+                    </div>
+                    
+                    <div class="payslip-body">
+                        <div class="payslip-section">
+                            <h3 style="margin: 0 0 10px 0; font-size: 14px; border-bottom: 2px solid #000; padding-bottom: 5px;">Employee Details</h3>
+                            <div class="payslip-row">
+                                <span><strong>Name:</strong></span>
+                                <span>${employee.name}</span>
+                            </div>
+                            <div class="payslip-row">
+                                <span><strong>KGID:</strong></span>
+                                <span>${employee.kgid}</span>
+                            </div>
+                            <div class="payslip-row">
+                                <span><strong>Designation:</strong></span>
+                                <span>${employee.designation}</span>
+                            </div>
+                            <div class="payslip-row">
+                                <span><strong>PAN:</strong></span>
+                                <span>${employee.pan}</span>
+                            </div>
+                            <div class="payslip-row">
+                                <span><strong>Office:</strong></span>
+                                <span>${employee.office || 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        <table class="payslip-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" style="text-align: center; background: #667eea; color: white;">EARNINGS</th>
+                                    <th colspan="2" style="text-align: center; background: #f5576c; color: white;">DEDUCTIONS</th>
+                                </tr>
+                                <tr>
+                                    <th>Particulars</th>
+                                    <th style="text-align: right;">Amount (₹)</th>
+                                    <th>Particulars</th>
+                                    <th style="text-align: right;">Amount (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Basic Pay</td>
+                                    <td style="text-align: right;">${basic.toLocaleString('en-IN')}</td>
+                                    <td>Professional Tax</td>
+                                    <td style="text-align: right;">${pt.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dearness Allowance (DA)</td>
+                                    <td style="text-align: right;">${da.toLocaleString('en-IN')}</td>
+                                    <td>GIS</td>
+                                    <td style="text-align: right;">${gis.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr>
+                                    <td>House Rent Allowance (HRA)</td>
+                                    <td style="text-align: right;">${hra.toLocaleString('en-IN')}</td>
+                                    <td>KGID</td>
+                                    <td style="text-align: right;">${kgid.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Medical Allowance (MA)</td>
+                                    <td style="text-align: right;">${ma.toLocaleString('en-IN')}</td>
+                                    <td>LIC</td>
+                                    <td style="text-align: right;">${lic.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Charge Allowance</td>
+                                    <td style="text-align: right;">${charge.toLocaleString('en-IN')}</td>
+                                    <td>GPF/NPS</td>
+                                    <td style="text-align: right;">${gpf.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Other Allowances</td>
+                                    <td style="text-align: right;">${other.toLocaleString('en-IN')}</td>
+                                    <td>Income Tax (TDS)</td>
+                                    <td style="text-align: right;">${tds.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>Other Deductions</td>
+                                    <td style="text-align: right;">${otherDed.toLocaleString('en-IN')}</td>
+                                </tr>
+                                <tr class="payslip-total">
+                                    <td><strong>TOTAL EARNINGS</strong></td>
+                                    <td style="text-align: right;"><strong>₹ ${totalEarnings.toLocaleString('en-IN')}</strong></td>
+                                    <td><strong>TOTAL DEDUCTIONS</strong></td>
+                                    <td style="text-align: right;"><strong>₹ ${totalDeductions.toLocaleString('en-IN')}</strong></td>
+                                </tr>
+                                <tr class="payslip-net">
+                                    <td colspan="3" style="text-align: right;"><strong>NET PAY (Take Home)</strong></td>
+                                    <td style="text-align: right;"><strong>₹ ${netPay.toLocaleString('en-IN')}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                            <strong>Amount in Words:</strong> ${numberToWords(netPay)} Rupees Only
+                        </div>
+
+                        <div class="payslip-footer">
+                            <div>
+                                <div style="font-size: 10px; margin-bottom: 5px;">Generated on: ${new Date().toLocaleDateString('en-IN')}</div>
+                                <div style="font-size: 10px; color: #666;">This is a computer generated pay slip</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="margin-top: 40px; border-top: 1px solid #000; padding-top: 5px;">
+                                    <strong>Authorized Signatory</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('payslipPreview').innerHTML = payslipHTML;
+            document.getElementById('downloadPayslipBtn').style.display = 'block';
+            document.getElementById('sharePayslipBtn').style.display = 'block';
+        }
+
+        function numberToWords(num) {
+            if (num === 0) return 'Zero';
+            
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            
+            num = Math.floor(num);
+            
+            if (num < 10) return ones[num];
+            if (num < 20) return teens[num - 10];
+            if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? ' ' + ones[num % 10] : '');
+            if (num < 1000) return ones[Math.floor(num / 100)] + ' Hundred' + (num % 100 !== 0 ? ' ' + numberToWords(num % 100) : '');
+            if (num < 100000) return numberToWords(Math.floor(num / 1000)) + ' Thousand' + (num % 1000 !== 0 ? ' ' + numberToWords(num % 1000) : '');
+            if (num < 10000000) return numberToWords(Math.floor(num / 100000)) + ' Lakh' + (num % 100000 !== 0 ? ' ' + numberToWords(num % 100000) : '');
+            return numberToWords(Math.floor(num / 10000000)) + ' Crore' + (num % 10000000 !== 0 ? ' ' + numberToWords(num % 10000000) : '');
+        }
+
+        function downloadPayslip() {
+            const empId = document.getElementById('payslipEmployee').value;
+            const employee = employees.find(e => e.id === empId);
+            const month = document.getElementById('payslipMonth').value;
+            const year = document.getElementById('payslipYear').value;
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const payslipContent = document.getElementById('payslipPreview').innerHTML;
+            
+            const fullHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>PaySlip - ${employee.name} - ${monthNames[parseInt(month)-1]} ${year}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; }
+                        .payslip-container { border: 2px solid #000; padding: 0; background: white; font-family: 'Courier New', monospace; font-size: 12px; }
+                        .payslip-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-bottom: 3px solid #000; }
+                        .payslip-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+                        .payslip-subtitle { font-size: 12px; opacity: 0.9; }
+                        .payslip-body { padding: 20px; }
+                        .payslip-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #ccc; }
+                        .payslip-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                        .payslip-table th { background: #f0f0f0; padding: 10px; text-align: left; border: 1px solid #000; font-weight: bold; }
+                        .payslip-table td { padding: 8px 10px; border: 1px solid #000; }
+                        .payslip-total { background: #e8e8e8; font-weight: bold; }
+                        .payslip-net { background: #d4edda; font-weight: bold; font-size: 14px; }
+                        .payslip-footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #000; display: flex; justify-content: space-between; }
+                        @media print { body { padding: 20px; } }
+                    </style>
+                </head>
+                <body>
+                    ${payslipContent}
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PaySlip_${employee.name.replace(/\s+/g, '_')}_${monthNames[parseInt(month)-1]}_${year}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function sharePayslip() {
+            const empId = document.getElementById('payslipEmployee').value;
+            const employee = employees.find(e => e.id === empId);
+            const month = document.getElementById('payslipMonth').value;
+            const year = document.getElementById('payslipYear').value;
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const payslipContent = document.getElementById('payslipPreview').innerHTML;
+            
+            const fullHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>PaySlip - ${employee.name} - ${monthNames[parseInt(month)-1]} ${year}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; }
+                        .payslip-container { border: 2px solid #000; padding: 0; background: white; font-family: 'Courier New', monospace; font-size: 12px; }
+                        .payslip-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-bottom: 3px solid #000; }
+                        .payslip-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+                        .payslip-subtitle { font-size: 12px; opacity: 0.9; }
+                        .payslip-body { padding: 20px; }
+                        .payslip-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #ccc; }
+                        .payslip-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                        .payslip-table th { background: #f0f0f0; padding: 10px; text-align: left; border: 1px solid #000; font-weight: bold; }
+                        .payslip-table td { padding: 8px 10px; border: 1px solid #000; }
+                        .payslip-total { background: #e8e8e8; font-weight: bold; }
+                        .payslip-net { background: #d4edda; font-weight: bold; font-size: 14px; }
+                        .payslip-footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #000; display: flex; justify-content: space-between; }
+                        @media print { body { padding: 20px; } }
+                    </style>
+                </head>
+                <body>
+                    ${payslipContent}
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const fileName = `PaySlip_${employee.name.replace(/\s+/g, '_')}_${monthNames[parseInt(month)-1]}_${year}.html`;
+            const file = new File([blob], fileName, { type: 'text/html' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                    files: [file],
+                    title: 'Pay Slip',
+                    text: `Pay Slip for ${employee.name} - ${monthNames[parseInt(month)-1]} ${year}`
+                }).catch(err => {
+                    console.log('Share failed:', err);
+                    downloadPayslip();
+                });
+            } else {
+                alert('Share not supported on this device. File will be downloaded instead.');
+                downloadPayslip();
+            }
+        }
+    </script>
+
+    <div style="background: #f5f5f5; padding: 20px; text-align: center; margin-top: 20px; border-top: 3px solid #667eea;">
+        <p style="font-size: 12px; color: #666; margin: 5px 0;">
+            <strong>📋 Professional Income Tax Calculator for Government Employees</strong>
+        </p>
+        <p style="font-size: 11px; color: #888; margin: 5px 0;">
+            Features: Month-wise Salary Breakup • Automatic Deduction Calculation • Form 16 with Annexure • Professional Format
+        </p>
+        <p style="font-size: 11px; color: #888; margin: 15px 0 5px 0;">
+            ⚠️ <strong>Disclaimer:</strong> This calculator is for reference purposes only. We do not guarantee 100% accuracy. Please verify calculations with your accounts department. Tax rates are based on Income Tax Act, 1961.
+        </p>
+        <p style="font-size: 10px; color: #999; margin: 10px 0 0 0;">
+            Based on FY 2025-26 tax slabs | New Regime: Rebate u/s 87A ₹25,000 (up to ₹8L) | Standard Deduction: ₹75,000 | Old Regime: ₹50,000
+        </p>
+    </div>
+</body>
+</html>
